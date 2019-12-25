@@ -16,13 +16,17 @@
     </b-row>
 </template>
 
-<script>
-    import GithubButton from 'vue-github-button'
-    export default {
-        name: "NotFound",
+<script lang="ts">
+    import Vue from "vue"
+    import {Component} from "vue-property-decorator";
+    const GithubButton = require("vue-github-button");
+
+    @Component({
         components: {
             GithubButton
-        },
+        }
+    })
+    export default class NotFound extends Vue {
         mounted() {
             this.$store.commit('updateNotFound', {
                 not_found: true

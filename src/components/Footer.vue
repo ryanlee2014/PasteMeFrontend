@@ -35,50 +35,48 @@
     </div>
 </template>
 
-<script>
-    export default {
-        name: "Footer",
-        data() {
-            return {
-                oneWord: 'Loading...',
-                year: new Date().getFullYear(),
-                cut_down_time: 0,
-            }
-        },
+<script lang="ts">
+    import Vue from "vue";
+    import {Component} from "vue-property-decorator"
+    import {AxiosInstance} from "axios";
+    @Component
+    export default class Footer extends Vue {
+        oneWord = "Loading";
+        year = new Date().getFullYear();
+        cut_down_time = 0;
+        api: any;
         mounted() {
-            this.getOne().then(result => {
+            this.getOne().then((result: any) => {
                 this.oneWord = result;
             })
-        },
-        methods: {
-            getOne() {
-                return this.api.get('https://v1.hitokoto.cn', {
-                    encode: 'text'
+        }
+        getOne() {
+            return this.api.get('https://v1.hitokoto.cn', {
+                encode: 'text'
+            });
+        }
+        refresh() {
+            if (this.cut_down_time === 0) {
+                this.cut_down_time = -1;
+                this.oneWord = 'Loading...';
+                this.getOne().then((result: any) => {
+                    this.oneWord = result;
+                    this.cut_down_time = 5;
+                    let clock = window.setInterval(() => {
+                        --this.cut_down_time;
+                        if (this.cut_down_time === 0) {
+                            window.clearInterval(clock);
+                        }
+                    }, 1000);
                 });
-            },
-            refresh() {
-                if (this.cut_down_time === 0) {
-                    this.cut_down_time = -1;
-                    this.oneWord = 'Loading...';
-                    this.getOne().then(result => {
-                        this.oneWord = result;
-                        this.cut_down_time = 5;
-                        let clock = window.setInterval(() => {
-                            --this.cut_down_time;
-                            if (this.cut_down_time === 0) {
-                                window.clearInterval(clock);
-                            }
-                        }, 1000);
-                    });
-                }
-            },
-            makeToast(title, message, append = false) {
-                this.$bvToast.toast(message, {
-                    title: title,
-                    autoHideDelay: 500,
-                    appendToast: append
-                })
             }
+        }
+        makeToast(title: string, message: string, append = false) {
+            this.$bvToast.toast(message, {
+                title: title,
+                autoHideDelay: 500,
+                appendToast: append
+            })
         }
     }
 </script>

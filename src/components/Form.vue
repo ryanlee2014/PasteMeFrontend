@@ -54,38 +54,34 @@
     </b-row>
 </template>
 
-<script>
+<script lang="ts">
     import stateMixins from "../assets/js/mixins/stateMixin";
-    export default {
-        name: "Form",
-        mixins: [stateMixins],
-        data() {
-            return {
-                form: {
-                    lang: 'plain',
-                    content: null,
-                    password: null,
-                },
-                read_once: []
+    import {Component, Mixins} from "vue-property-decorator";
+
+    @Component
+    export default class Form extends Mixins(stateMixins) {
+        form: any = {
+            lang: 'plain',
+            content: null,
+            password: null,
+        };
+        read_once: any = [];
+
+        onSubmit() {
+            let key = "";
+            if (this.$route.params.key !== '') {
+                key = this.$route.params.key;
+            } else if (this.read_once.length > 0) {
+                key = "once"
             }
-        },
-        methods: {
-            onSubmit() {
-                let key = "";
-                if (this.$route.params.key !== '') {
-                    key = this.$route.params.key;
-                } else if (this.read_once.length > 0) {
-                    key = "once"
+            const sendArgs = [`${this.$store.getters.config.api}${key}`, this.form];
+            const sendFunc = key === "" || key === "once" ? this.api.post : this.api.put;
+            sendFunc(...sendArgs).then((response: any) => {
+                if (response.status === 201) {
+                    this.updateView("success");
+                    this.updateKey(response.key);
                 }
-                const sendArgs = [`${this.$store.getters.config.api}${key}`, this.form];
-                const sendFunc = key === "" || key === "once" ? this.api.post : this.api.put;
-                sendFunc(...sendArgs).then(response => {
-                    if (response.status === 201) {
-                        this.updateView("success");
-                        this.updateKey(response.key);
-                    }
-                });
-            }
+            });
         }
     }
 </script>

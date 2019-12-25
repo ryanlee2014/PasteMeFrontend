@@ -44,25 +44,39 @@
     </b-row>
 </template>
 
-<script>
+<script lang="ts">
     import lineNumbersBlock from '../assets/js/highlightjs-line-numbers'
     import '../assets/css/github-gist.css'
     import '../assets/css/highlightjs-line-numbers.css'
     import { mapGetters } from "vuex"
-    export default {
-        name: "PasteView",
-        data() {
-            return {
-                copy_btn_status: 0,
-                raw: []
-            }
-        },
+    import Vue from "vue";
+    import {Component, Watch} from "vue-property-decorator";
+    declare global {
+        interface Window {
+            [id: string]: any
+        }
+    }
+    @Component({
+        computed:{
+            ...mapGetters([
+                "lang",
+                "content"
+            ])
+        }
+    })
+    export default class PasteView extends Vue {
+        copy_btn_status = 0;
+        raw = [];
+        clipboard: any;
+        content: any;
+        lang: any;
+        markdown: any;
         mounted() {
             let clipboard = new this.clipboard('#clipboard-btn');
             let cur = this;
             clipboard.on('success', function () {
                 cur.copy_btn_status = 1;
-                window.getSelection().removeAllRanges();
+                window.getSelection()!.removeAllRanges();
                 window.setTimeout(function () {
                     cur.copy_btn_status = 0;
                 }, 2000);
@@ -76,60 +90,55 @@
             this.initMermaid();
             this.renderHljs(this.$refs.hljs);
             this.markdownBindHook();
-        },
-        computed: {
-            linesCount: function () {
-                let BREAK_LINE_REGEXP = /\r\n|\r|\n/g;
-                return (this.content.trim().match(BREAK_LINE_REGEXP) || []).length + 1;
-            },
-            ...mapGetters([
-                "lang",
-                "content"
-            ])
-        },
-        methods: {
-            renderHljs: function (el) {
-                this.$nextTick(() => {
-                    let blocks = el.querySelectorAll('pre code');
-                    if (document.querySelectorAll('.hljs').length === 0) {
-                        blocks.forEach(function (block) {
-                            window.hljs.highlightBlock(block);
-                            if (block.getAttribute('class').split(' ').indexOf('line-numbers') > -1) {
-                                lineNumbersBlock(block, {
-                                    singleLine: true
-                                });
-                            }
-                        });
-                    }
-                })
-            },
-            initMermaid: function () {
-                this.$nextTick(() => {
-                    if (this.lang === "markdown") {
-                        import("mermaid").then(mermaid => {
-                            document.querySelectorAll(".mermaid").forEach(v => {
-                                mermaid.init(undefined, v);
+        }
+
+        get linesCount () {
+            let BREAK_LINE_REGEXP = /\r\n|\r|\n/g;
+            return (this.content.trim().match(BREAK_LINE_REGEXP) || []).length + 1;
+        }
+
+        renderHljs(el: any) {
+            this.$nextTick(() => {
+                let blocks = el.querySelectorAll('pre code');
+                if (document.querySelectorAll('.hljs').length === 0) {
+                    blocks.forEach(function (block: any) {
+                        (window.hljs as any)!.highlightBlock(block);
+                        if (block.getAttribute('class').split(' ').indexOf('line-numbers') > -1) {
+                            lineNumbersBlock(block, {
+                                singleLine: true
                             });
-                        })
-                    }
-                })
-            },
-            markdownBindHook: function () {
-                const _render = this.markdown.render;
-                const that = this;
-                this.markdown.render = function () {
-                    that.initMermaid();
-                    return _render.apply(this, arguments);
+                        }
+                    });
                 }
+            })
+        }
+        initMermaid() {
+            this.$nextTick(() => {
+                if (this.lang === "markdown") {
+                    import("mermaid").then((mermaid: any) => {
+                        document.querySelectorAll(".mermaid").forEach(v => {
+                            mermaid.init(undefined, v);
+                        });
+                    })
+                }
+            })
+        }
+        markdownBindHook() {
+            const _render = this.markdown.render;
+            const that = this;
+            this.markdown.render = function () {
+                that.initMermaid();
+                return _render.apply(this, arguments);
             }
-        },
-        watch: {
-            raw: function () {
-                this.renderHljs(document);
-            },
-            content: function () {
-                this.initMermaid();
-            }
+        }
+        @Watch("raw")
+        onRawChanged() {
+            this.renderHljs(document);
+        }
+
+        @Watch("content")
+        onContentChanged() {
+            this.initMermaid();
         }
     }
 </script>

@@ -77,26 +77,28 @@
     </b-row>
 </template>
 
-<script>
-    import GlobalAsia from "./icons/GlobalAsia";
-    export default {
-        name: "Header",
-        components: {GlobalAsia},
-        data() {
-            return {
-                key: null,
-                location: location,
-            }
-        },
-        methods: {
-            onSubmit() {
-                this.$router.push(this.key);
-                this.key = null;
-            },
-            setLang(lang) {
-                this.setI18n(lang);
-                this.$cookie.set('pasteme_lang', lang, 7);
-            }
+<script lang="ts">
+    import {Component} from "vue-property-decorator";
+    import GlobalAsia from "./icons/GlobalAsia.vue";
+    import Vue from "vue";
+    @Component({
+        components: {
+            GlobalAsia
+        }
+    })
+    export default class Header extends Vue {
+        key: string | null = null;
+        location = location;
+        setI18n: any;
+        $cookie: any;
+        onSubmit() {
+            this.$router.push(this.key as string);
+            this.key = null;
+        }
+
+        setLang(lang: string) {
+            this.setI18n(lang);
+            this.$cookie.set('pasteme_lang', lang, 7);
         }
     }
 </script>

@@ -12,9 +12,12 @@
     </b-row>
 </template>
 
-<script>
-    export default {
-        name: "Loading"
+<script lang="ts">
+    import Vue from "vue";
+    import {Component} from "vue-property-decorator";
+
+    @Component
+    export default class Loading extends Vue {
     }
 </script>
 

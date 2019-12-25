@@ -14,9 +14,9 @@
     </b-row>
 </template>
 
-<script>
-    export default {
-        name: "ManualDeleted"
+<script lang="ts">
+    import Vue from "vue";
+    export default class ManualDeleted extends Vue {
     }
 </script>
 
